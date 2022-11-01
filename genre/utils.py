@@ -7,6 +7,7 @@
 import html
 import re
 import xml.etree.ElementTree as ET
+import torch
 from collections import defaultdict
 from urllib.parse import unquote
 
@@ -480,7 +481,9 @@ def get_wikidata_ids(
             return search_wikidata(result, label_or_alias2wikidataID), "wikidata"
 
 
-def post_process_wikidata(outputs, text_to_id=False, marginalize=False):
+def post_process_wikidata(outputs, text_to_id=False, marginalize=False,
+                                                     batched_hypos=None,
+                                                     marginalize_lenpen=0.5):
 
     if text_to_id:
         outputs = [
