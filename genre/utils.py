@@ -480,7 +480,7 @@ def get_wikidata_ids(
         else:
             return search_wikidata(result, label_or_alias2wikidataID), "wikidata"
 
-
+        
 def post_process_wikidata(outputs, text_to_id=False, marginalize=False,
                                                      batched_hypos=None,
                                                      marginalize_lenpen=0.5):

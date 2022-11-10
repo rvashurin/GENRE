@@ -44,11 +44,21 @@ class _GENREHubInterface:
 
         outputs = [
             [
-                {"text": self.decode(hypo["tokens"]), "score": hypo["score"]}
+                {"text": self.decode(hypo["tokens"]), "score": hypo["score"],}
                 for hypo in hypos
             ]
             for hypos in batched_hypos
         ]
+        
+        uncertainties = []
+        for hypos in batched_hypos:
+            uncertainties.append({
+                'eentropy': sum([hypo['cumulative_uncertainties']['eentropy'].cpu().item() for hypo in hypos]),
+                'pentropy': sum([hypo['cumulative_uncertainties']['pentropy'].cpu().item() for hypo in hypos]),
+                'bald': sum([hypo['cumulative_uncertainties']['bald'].cpu().item() for hypo in hypos]),
+                'epkl': sum([hypo['cumulative_uncertainties']['epkl'].cpu().item() for hypo in hypos]),
+                'rmi': sum([hypo['cumulative_uncertainties']['rmi'].cpu().item() for hypo in hypos])            
+            })
 
         outputs = post_process_wikidata(
             outputs, text_to_id=text_to_id, marginalize=marginalize,
@@ -56,7 +66,7 @@ class _GENREHubInterface:
                                             marginalize_lenpen=marginalize_lenpen
         )
 
-        return outputs
+        return outputs, uncertainties
 
     def generate(self, *args, **kwargs) -> List[List[Dict[str, torch.Tensor]]]:
         return super(BARTHubInterface, self).generate(*args, **kwargs)
@@ -126,4 +136,4 @@ class mGENRE(BARTModel):
             sentencepiece_model=os.path.join(model_name_or_path, sentencepiece_model),
             **kwargs,
         )
-        return mGENREHubInterface(x["args"], x["task"], x["models"][0])
+        return mGENREHubInterface(x["args"], x["task"], x["models"])
